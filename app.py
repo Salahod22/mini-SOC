@@ -4,26 +4,61 @@ import time
 import random
 from datetime import datetime
 import os
+import logging
 
 app = Flask(__name__)
 
 # Configuration
-LOG_FILE = os.path.join('notebooks', 'network_logs.csv')
-ATTACKER_IP = '192.168.1.50'
-TARGET_IP = '192.168.1.100'
+# Use absolute path to ensure notebooks can find it easily if running locally
+# In a real VM setup, this would be relative to the app
+LOG_DIR = 'notebooks'
+LOG_FILE = os.path.join(LOG_DIR, 'network_logs.csv')
 
-# Ensure log file exists
+# Ensure log directory exists
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+# Initialize CSV if not exists
 if not os.path.exists(LOG_FILE):
-    os.makedirs('notebooks', exist_ok=True)
     with open(LOG_FILE, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['timestamp', 'source_ip', 'dest_ip', 'port', 'action', 'details'])
 
-def log_traffic(source_ip, dest_ip, port, action, details):
+def append_log(source_ip, dest_ip, port, action, details):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    with open(LOG_FILE, 'a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([timestamp, source_ip, dest_ip, port, action, details])
+    try:
+        with open(LOG_FILE, 'a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([timestamp, source_ip, dest_ip, port, action, details])
+    except Exception as e:
+        print(f"Logging Error: {e}")
+
+# Middleware to log EVERY request (The "IDS" Sensor)
+@app.before_request
+def log_request_info():
+    # Skip logging static files or internal dashboard calls to avoid noise
+    if request.path.startswith('/static') or request.path.startswith('/victim') or request.path == '/favicon.ico':
+        return
+
+    # Classify Traffic
+    action = 'HTTP_REQUEST'
+    details = f"{request.method} {request.path}"
+    
+    if request.path == '/login' and request.method == 'POST':
+        action = 'LOGIN_ATTEMPT'
+        # Capture username for detail
+        data = request.get_json(silent=True) or request.form
+        user = data.get('username', 'unknown')
+        details = f"User: {user}"
+    
+    # In a real VM, remote_addr is the Attacker IP
+    src_ip = request.remote_addr 
+    # For local testing, it might be 127.0.0.1
+    
+    append_log(src_ip, 'Server', 5000, action, details)
+
+
+# --- Routes ---
 
 @app.route('/')
 def index():
@@ -31,61 +66,86 @@ def index():
 
 @app.route('/attacker')
 def attacker():
+    # The Web UI Attacker Panel
     return render_template('attacker.html')
 
 @app.route('/victim')
 def victim():
+    # The Web UI Victim Dashboard
     logs = []
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, 'r') as f:
             reader = csv.DictReader(f)
             logs = list(reader)
-            logs.reverse() # Show newest first
+            logs.reverse() 
     
-    # Simple IDS Logic for the Dashboard
     threats = detect_threats(logs)
-    
-    return render_template('victim.html', logs=logs[:50], threats=threats) # Show last 50 logs
+    return render_template('victim.html', logs=logs[:100], threats=threats)
 
+
+# --- Vulnerable Endpoints (Traffic Targets) ---
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Simulate processing time
+        time.sleep(0.1) 
+        return jsonify({"status": "failed", "message": "Invalid credentials"}), 401
+    return "Login Page"
+
+
+# --- API for Web-Based Attacks (Self-Simulation) ---
+# This allows the "Attacker Console" to work even without a second VM
 @app.route('/api/attack', methods=['POST'])
 def api_attack():
     attack_type = request.json.get('type')
+    target_ip = '127.0.0.1' # Self
     
     if attack_type == 'port_scan':
-        # Simulate a quick small scan
-        open_ports = [22, 80, 443]
-        for port in range(20, 30):
-            status = 'OPEN' if port in open_ports else 'CLOSED'
-            log_traffic(ATTACKER_IP, TARGET_IP, port, 'SCAN_SYN', f'Port {status}')
+        # Log synthetic scan traffic
+        for port in [21, 22, 80, 443, 8080]:
+            append_log('192.168.1.50', target_ip, port, 'SCAN_SYN', 'Creating Synthetic Log')
             
     elif attack_type == 'brute_force':
-        usernames = ['admin', 'root']
-        passwords = ['123', 'password', 'admin']
+        # Actually hit the login endpoint to generate REAL logs too? 
+        # For simplicity in "Web Mode", we just log synthetic events 
+        # to ensure the Dashboard looks good instantly.
         for _ in range(5):
-            u = random.choice(usernames)
-            p = random.choice(passwords)
-            log_traffic(ATTACKER_IP, TARGET_IP, 22, 'LOGIN_ATTEMPT', f'Failed login {u}:{p}')
+            append_log('192.168.1.50', target_ip, 5000, 'LOGIN_ATTEMPT', 'Failed login admin:123')
             
     elif attack_type == 'dos':
-        for _ in range(20):
-            log_traffic(ATTACKER_IP, TARGET_IP, 80, 'HTTP_REQUEST', 'GET / HTTP/1.1')
+        for _ in range(50):
+            append_log('192.168.1.50', target_ip, 5000, 'HTTP_REQUEST', 'GET / HTTP/1.1')
             
     return jsonify({'status': 'success', 'message': f'{attack_type} executed'})
 
+
+# --- IDS Logic ---
 def detect_threats(logs):
     threats = []
-    # Simplified detection logic for the web view
-    # 1. Count HTTP requests (DoS)
-    http_count = sum(1 for log in logs if log['action'] == 'HTTP_REQUEST')
-    if http_count > 100: # Arbitrary threshold for demo
-        threats.append({'type': 'DoS Detected', 'details': f'High volume of HTTP requests ({http_count})'})
+    # 1. DoS: > 50 requests from same IP in last batch
+    ip_counts = {}
+    for log in logs[:200]: # Analyze recent logs
+        ip = log['source_ip']
+        ip_counts[ip] = ip_counts.get(ip, 0) + 1
         
-    # 2. Count Login Attempts (Brute Force)
-    login_count = sum(1 for log in logs if log['action'] == 'LOGIN_ATTEMPT')
-    if login_count > 10:
-         threats.append({'type': 'Brute Force Detected', 'details': f'Multiple failed logins ({login_count})'})
-         
+    for ip, count in ip_counts.items():
+        if count > 50:
+            threats.append({'type': 'DoS Detected', 'details': f'{ip} sent {count} requests'})
+
+    # 2. Brute Force
+    login_counts = {}
+    for log in logs[:200]:
+        if log['action'] == 'LOGIN_ATTEMPT':
+            ip = log['source_ip']
+            login_counts[ip] = login_counts.get(ip, 0) + 1
+            
+    for ip, count in login_counts.items():
+        if count > 5:
+            threats.append({'type': 'Brute Force', 'details': f'{ip}: {count} failed logins'})
+            
     return threats
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Host=0.0.0.0 is CRITICAL for VM accessibility
+    app.run(debug=True, host='0.0.0.0', port=5000)
