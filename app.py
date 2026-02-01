@@ -111,17 +111,22 @@ def api_data():
 def login():
     if request.method == 'POST':
         time.sleep(0.1) 
-        # In a real vulnerable app, we would process SQL here.
-        # For simulation, just logging the payload (done in before_request) is enough for IDS.
-        return jsonify({"status": "failed", "message": "Invalid credentials"}), 401
-    return "Login Page"
+        data = request.form
+        username = data.get('username')
+        password = data.get('password')
+        
+        # Hardcoded Credentials
+        if username == 'admin' and password == 'password':
+            return render_template('login.html', success="Welcome back, Administrator.")
+        else:
+            return render_template('login.html', error="Invalid credentials. Intrusion attempt logged.")
+    return render_template('login.html')
 
 @app.route('/search')
 def search():
     # Vulnerable to XSS (Reflected)
     query = request.args.get('q', '')
-    # In a real vulnerable app: return f"Results for: {query}" (Unescaped)
-    return f"Search results for: {query}" 
+    return render_template('search.html', query=query) 
 
 @app.route('/dns-lookup', methods=['POST'])
 def dns_lookup():

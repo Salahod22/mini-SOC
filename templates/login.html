@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-20">
+    <div class="bg-slate-800 p-8 rounded-lg border border-slate-700 shadow-2xl relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-white mb-2">Secure Login</h2>
+            <p class="text-slate-400 text-sm">Employee Access Portal</p>
+        </div>
+
+        <form action="/login" method="POST" class="space-y-6">
+            <div>
+                <label for="username" class="block text-slate-300 text-sm font-bold mb-2">Username</label>
+                <input type="text" id="username" name="username"
+                    class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500 transition shadow-inner">
+            </div>
+
+            <div>
+                <label for="password" class="block text-slate-300 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="password" name="password"
+                    class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500 transition shadow-inner">
+            </div>
+
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02] shadow-lg shadow-blue-500/20">
+                Sign In
+            </button>
+        </form>
+
+        {% if error %}
+        <div class="mt-6 p-4 bg-red-900/30 border border-red-500/50 rounded flex items-center animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 mr-3" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-red-200 text-sm">{{ error }}</span>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="mt-6 p-4 bg-emerald-900/30 border border-emerald-500/50 rounded flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400 mr-3" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-emerald-200 text-sm">{{ success }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="text-center mt-6 text-slate-500 text-xs">
+        &copy; 2026 CyberSim Corp. Authorized Personnel Only.
+    </div>
+</div>
+{% endblock %}
