@@ -14,24 +14,26 @@
             Active Alerts
         </h2>
 
-        {% if threats %}
-        <div class="space-y-4">
-            {% for threat in threats %}
-            <div class="bg-red-900/40 border border-red-500/50 p-4 rounded-lg shadow-lg">
-                <h3 class="text-lg font-bold text-red-300 flex items-center">
-                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
-                    {{ threat.type }}
-                </h3>
-                <p class="text-red-200/70 text-sm mt-1">{{ threat.details }}</p>
+        <div id="alerts-container">
+            {% if threats %}
+            <div class="space-y-4">
+                {% for threat in threats %}
+                <div class="bg-red-900/40 border border-red-500/50 p-4 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-bold text-red-300 flex items-center">
+                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
+                        {{ threat.type }}
+                    </h3>
+                    <p class="text-red-200/70 text-sm mt-1">{{ threat.details }}</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="bg-emerald-900/20 border border-emerald-500/30 p-6 rounded-lg text-center">
+                <p class="text-emerald-400 font-semibold">System Secure</p>
+                <p class="text-emerald-500/60 text-sm">No active threats detected.</p>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="bg-emerald-900/20 border border-emerald-500/30 p-6 rounded-lg text-center">
-            <p class="text-emerald-400 font-semibold">System Secure</p>
-            <p class="text-emerald-500/60 text-sm">No active threats detected.</p>
-        </div>
-        {% endif %}
 
         <div class="mt-8 bg-slate-800 p-6 rounded-lg border border-slate-700">
             <h3 class="text-lg font-semibold mb-2">System Status</h3>
@@ -54,16 +56,20 @@
     <div class="lg:col-span-2">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-white">Live Network Traffic</h2>
-            <button onclick="window.location.reload()"
-                class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-slate-300 transition">
-                Refresh Logs
-            </button>
+            <div class="flex items-center space-x-2">
+                <span class="relative flex h-3 w-3">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs text-emerald-400 font-mono">LIVE UPDATE</span>
+            </div>
         </div>
 
         <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 shadow-xl">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto h-[600px] overflow-y-auto relative"> <!-- Fixed Height for scroll -->
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-900 text-slate-400">
+                    <thead class="bg-slate-900 text-slate-400 sticky top-0 z-10 shadow-md">
                         <tr>
                             <th class="p-4 font-semibold">Timestamp</th>
                             <th class="p-4 font-semibold">Source</th>
@@ -71,25 +77,15 @@
                             <th class="p-4 font-semibold">Details</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700">
+                    <tbody id="log-table-body" class="divide-y divide-slate-700">
+                        <!-- Logs will be injected here by JS -->
                         {% for log in logs %}
                         <tr class="hover:bg-slate-700/50 transition duration-150">
                             <td class="p-3 font-mono text-slate-500 text-xs">{{ log.timestamp }}</td>
                             <td class="p-3 font-mono text-blue-300">{{ log.source_ip }}</td>
                             <td class="p-3">
-                                {% if log.action == 'SCAN_SYN' %}
-                                <span
-                                    class="px-2 py-1 bg-yellow-900/50 text-yellow-400 rounded text-xs border border-yellow-700/50">SCAN</span>
-                                {% elif log.action == 'LOGIN_ATTEMPT' %}
-                                <span
-                                    class="px-2 py-1 bg-red-900/50 text-red-400 rounded text-xs border border-red-700/50">AUTH</span>
-                                {% elif log.action == 'HTTP_REQUEST' %}
-                                <span
-                                    class="px-2 py-1 bg-purple-900/50 text-purple-400 rounded text-xs border border-purple-700/50">HTTP</span>
-                                {% else %}
                                 <span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">{{ log.action
                                     }}</span>
-                                {% endif %}
                             </td>
                             <td class="p-3 text-slate-300">{{ log.details }}</td>
                         </tr>
@@ -100,4 +96,160 @@
         </div>
     </div>
 </div>
+
+<script>
+    function getBadgeClass(action) {
+        if (action === 'SCAN_SYN') return 'bg-yellow-900/50 text-yellow-400 border-yellow-700/50';
+        if (action === 'LOGIN_ATTEMPT') return 'bg-red-900/50 text-red-400 border-red-700/50';
+        if (action === 'HTTP_REQUEST') return 'bg-purple-900/50 text-purple-400 border-purple-700/50';
+        if (action === 'SEARCH_QUERY') return 'bg-orange-900/50 text-orange-400 border-orange-700/50';
+        if (action === 'DNS_LOOKUP') return 'bg-pink-900/50 text-pink-400 border-pink-700/50';
+        return 'bg-slate-700 text-slate-300';
+    }
+
+    // State for dismissed alerts
+    const dismissedThreats = new Set();
+
+    // Modal Logic
+    function openModal(type, details) {
+        document.getElementById('modal-title').innerText = type;
+        document.getElementById('modal-details').innerText = details;
+        document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('details-modal').classList.add('hidden');
+    }
+
+    // Dismiss Logic
+    function dismissAlert(event, btn, signature) {
+        event.stopPropagation(); // Prevent modal opening
+        dismissedThreats.add(signature); // Remember this alert is dismissed
+
+        const card = btn.closest('.alert-card');
+        card.style.opacity = '0';
+        setTimeout(() => {
+            // If we are strictly relying on re-render, this remove is visual only until next tick.
+            // But since we updated the Set, the next tick won't render it.
+            card.remove();
+        }, 300);
+    }
+
+    async function updateDashboard() {
+        try {
+            const response = await fetch('/api/data');
+            const data = await response.json();
+
+            // 1. Update Logs
+            const tbody = document.getElementById('log-table-body');
+            tbody.innerHTML = data.logs.map(log => `
+                <tr class="hover:bg-slate-700/50 transition duration-150 animate-fade-in">
+                    <td class="p-3 font-mono text-slate-500 text-xs">${log.timestamp}</td>
+                    <td class="p-3 font-mono text-blue-300">${log.source_ip}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-xs border ${getBadgeClass(log.action)}">${log.action}</span>
+                    </td>
+                    <td class="p-3 text-slate-300">${log.details}</td>
+                </tr>
+            `).join('');
+
+            // 2. Update Alerts
+            // Filter out threats that have been dismissed
+            const activeThreats = data.threats.filter(threat => {
+                // Use the unique backend ID for filtering
+                return !dismissedThreats.has(threat.id);
+            });
+
+            const alertsContainer = document.getElementById('alerts-container');
+
+            if (activeThreats.length > 0) {
+                // escape special quotes
+                alertsContainer.innerHTML = '<div class="space-y-4">' + activeThreats.map(threat => {
+                    const safeType = threat.type.replace(/'/g, "\\'");
+                    const safeDetails = threat.details.replace(/'/g, "\\'");
+
+                    return `
+                    <div class="alert-card relative bg-red-900/40 border border-red-500/50 p-4 rounded-lg shadow-lg animate-fade-in cursor-pointer hover:bg-red-900/60 transition duration-200" 
+                         onclick="openModal('${safeType}', '${safeDetails}')">
+                        
+                        <!-- Use threat.id for dismissal -->
+                        <button onclick="dismissAlert(event, this, '${threat.id}')" class="absolute top-2 right-2 p-1 text-red-400 hover:text-white hover:bg-red-800 rounded-full transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <h3 class="text-lg font-bold text-red-300 flex items-center">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
+                            ${threat.type}
+                        </h3>
+                        <p class="text-red-200/70 text-sm mt-1 truncate pr-6">${threat.details}</p>
+                    </div>
+                `}).join('') + '</div>';
+            } else {
+                alertsContainer.innerHTML = `
+                    <div class="bg-emerald-900/20 border border-emerald-500/30 p-6 rounded-lg text-center animate-fade-in">
+                        <p class="text-emerald-400 font-semibold">System Secure</p>
+                        <p class="text-emerald-500/60 text-sm">No active threats detected.</p>
+                    </div>
+                `;
+            }
+
+        } catch (error) {
+            console.error('Update failed', error);
+        }
+    }
+
+    // Poll every 2 seconds
+    setInterval(updateDashboard, 2000);
+</script>
+
+<!-- Details Modal -->
+<div id="details-modal"
+    class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in"
+    onclick="closeModal()">
+    <div class="bg-slate-800 border border-slate-600 p-8 rounded-xl shadow-2xl max-w-lg w-full relative"
+        onclick="event.stopPropagation()">
+
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <h3 id="modal-title" class="text-2xl font-bold text-red-400 mb-4 border-b border-slate-700 pb-2">Threat Detected
+        </h3>
+
+        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+            <p class="text-sm text-slate-500 uppercase font-bold mb-1">Payload / Details</p>
+            <p id="modal-details" class="text-slate-200 font-mono text-sm break-all"></p>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button onclick="closeModal()"
+                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .alert-card {
+        transition: opacity 0.3s;
+    }
+</style>
 {% endblock %}

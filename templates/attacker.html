@@ -49,9 +49,59 @@
                     <h3 class="text-xl font-semibold text-white">Denial of Service</h3>
                     <p class="text-slate-400 text-sm mt-1">Flood the web server (Port 80) with HTTP requests.</p>
                 </div>
-                <button onclick="launchAttack('dos')"
-                    class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition">
-                    Launch Flood
+                <div class="flex items-center">
+                    <input type="number" id="dos-count" value="100" min="10" max="5000"
+                        class="bg-slate-900 border border-slate-600 text-white rounded px-3 py-2 w-24 mr-3 focus:outline-none focus:border-red-500 transition text-center"
+                        placeholder="Count">
+                    <button onclick="launchAttack('dos', { count: document.getElementById('dos-count').value })"
+                        class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition">
+                        Launch Flood
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SQL Injection Card -->
+        <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-semibold text-white">SQL Injection (SQLi)</h3>
+                    <p class="text-slate-400 text-sm mt-1">Inject SQL payload <code>' OR 1=1 --</code> to bypass login.
+                    </p>
+                </div>
+                <button onclick="launchAttack('sqli')"
+                    class="bg-violet-600 hover:bg-violet-700 text-white py-2 px-4 rounded transition">
+                    Inject Payload
+                </button>
+            </div>
+        </div>
+
+        <!-- XSS Card -->
+        <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-semibold text-white">Cross-Site Scripting (XSS)</h3>
+                    <p class="text-slate-400 text-sm mt-1">Inject malicious script <code>&lt;script&gt;</code> into
+                        Search.</p>
+                </div>
+                <button onclick="launchAttack('xss')"
+                    class="bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded transition">
+                    Inject Script
+                </button>
+            </div>
+        </div>
+
+        <!-- Command Injection Card -->
+        <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-semibold text-white">Command Injection (RCE)</h3>
+                    <p class="text-slate-400 text-sm mt-1">Chain shell commands <code>; cat /etc/passwd</code> via DNS
+                        tool.</p>
+                </div>
+                <button onclick="launchAttack('command_injection')"
+                    class="bg-rose-600 hover:bg-rose-700 text-white py-2 px-4 rounded transition">
+                    Execute Command
                 </button>
             </div>
         </div>
@@ -65,19 +115,21 @@
 </div>
 
 <script>
-    async function launchAttack(type) {
+    async function launchAttack(type, params = {}) {
         const feedback = document.getElementById('feedback');
         feedback.classList.remove('hidden');
         feedback.innerText = `Implementing ${type} attack...`;
         feedback.className = "mt-8 p-4 bg-slate-700 rounded-lg text-slate-300 animate-pulse";
 
         try {
+            const body = { type: type, ...params };
+
             const response = await fetch('/api/attack', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ type: type }),
+                body: JSON.stringify(body),
             });
             const data = await response.json();
 
