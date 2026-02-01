@@ -11,6 +11,14 @@
         Attacker Console
     </h2>
 
+    <!-- Target Configuration -->
+    <div class="mb-6 flex items-center space-x-4 bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <label class="text-slate-300 font-mono">Target IP:</label>
+        <input type="text" id="target-ip" value="127.0.0.1"
+            class="bg-slate-900 border border-slate-600 text-white px-3 py-1 rounded font-mono focus:border-red-500 focus:outline-none w-40">
+        <p class="text-xs text-slate-500">Enter the IP of the Victim machine.</p>
+    </div>
+
     <div class="grid gap-6">
         <!-- Port Scan Card -->
         <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
@@ -117,12 +125,14 @@
 <script>
     async function launchAttack(type, params = {}) {
         const feedback = document.getElementById('feedback');
+        const targetIp = document.getElementById('target-ip').value;
+
         feedback.classList.remove('hidden');
-        feedback.innerText = `Implementing ${type} attack...`;
+        feedback.innerText = `Targeting ${targetIp}...`;
         feedback.className = "mt-8 p-4 bg-slate-700 rounded-lg text-slate-300 animate-pulse";
 
         try {
-            const body = { type: type, ...params };
+            const body = { type: type, target: targetIp, ...params };
 
             const response = await fetch('/api/attack', {
                 method: 'POST',
