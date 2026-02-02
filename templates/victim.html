@@ -137,7 +137,7 @@
 
     async function updateDashboard() {
         try {
-            const response = await fetch('/api/data');
+            const response = await fetch('/soc/api/data');
             const data = await response.json();
 
             // 1. Update Logs
