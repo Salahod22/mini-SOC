@@ -1,3 +1,43 @@
 timestamp,source_ip,dest_ip,port,action,details
 
 2026-02-02 20:40:41,127.0.0.1,Server,5000,HTTP_REQUEST,GET /portal/login UA:CyberSim-Scanner 
+2026-02-02 21:18:56,127.0.0.1,Server,5000,HTTP_REQUEST,GET / UA:Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0 
+2026-02-02 21:19:38,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: admin' OR 1=1 --
+2026-02-02 21:19:38,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/dashboard UA:python-requests/2.32.5 
+2026-02-02 21:19:44,192.168.1.110,Server,5000,SEARCH_QUERY,Query: <script>alert('XSS')</script>
+2026-02-02 21:19:47,192.168.1.110,Server,5000,SEARCH_QUERY,Query: ; cat /etc/passwd
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:19:57,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: admin
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: admin
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: admin
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: jdoe
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: jdoe
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: jdoe
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: root
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: root
+2026-02-02 21:20:08,192.168.1.110,Server,5000,LOGIN_ATTEMPT,Failed login: root
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
