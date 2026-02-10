@@ -1,11 +1,13 @@
 import json
 import time
 import os
+import datetime
 
 LOG_FILE = 'notebooks/network_logs.json'
 
 def append_log(source_ip, dest_ip, port, action, details):
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    # Use ISO 8601 format for Wazuh compatibility (e.g., 2023-10-27T10:00:00.123456)
+    timestamp = datetime.datetime.utcnow().isoformat()
     log_entry = {
         'timestamp': timestamp,
         'source_ip': source_ip,
