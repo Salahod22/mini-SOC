@@ -40,4 +40,4 @@ timestamp,source_ip,dest_ip,port,action,details
 2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
 2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
 2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/ UA:python-requests/2.32.5 
-2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5 
+2026-02-02 21:20:15,192.168.1.110,Server,5000,HTTP_REQUEST,GET /portal/login UA:python-requests/2.32.5

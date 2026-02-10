@@ -1,25 +1,33 @@
-import csv
-import os
+import json
 import time
+import os
 
-LOG_FILE = 'notebooks/network_logs.csv'
+LOG_FILE = 'notebooks/network_logs.json'
 
 def append_log(source_ip, dest_ip, port, action, details):
-    file_exists = os.path.exists(LOG_FILE)
-    with open(LOG_FILE, 'a', newline='') as f:
-        writer = csv.writer(f)
-        if not file_exists:
-            writer.writerow(['timestamp', 'source_ip', 'dest_ip', 'port', 'action', 'details'])
-        
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        writer.writerow([timestamp, source_ip, dest_ip, port, action, details])
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    log_entry = {
+        'timestamp': timestamp,
+        'source_ip': source_ip,
+        'dest_ip': dest_ip,
+        'port': port,
+        'action': action,
+        'details': details
+    }
+    
+    with open(LOG_FILE, 'a') as f:
+        json.dump(log_entry, f)
+        f.write('\n')
 
 def get_logs_and_threats():
     logs = []
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, 'r') as f:
-            reader = csv.DictReader(f)
-            logs = list(reader)
+            for line in f:
+                try:
+                    logs.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
             logs.reverse() 
     
     threats = detect_threats(logs)
