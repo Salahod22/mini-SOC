@@ -12,7 +12,7 @@ def append_log(source_ip, dest_ip, port, action, details):
         'timestamp': timestamp,
         'source_ip': source_ip,
         'dest_ip': dest_ip,
-        'port': port,
+        'dst_port': port,
         'action': action,
         'details': details
     }

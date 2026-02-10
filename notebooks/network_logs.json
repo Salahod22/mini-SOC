@@ -1,1 +1,8 @@
-{"timestamp": "2026-02-10 09:53:17", "source_ip": "1.2.3.4", "dest_ip": "10.0.0.1", "port": 80, "action": "TEST_ACTION", "details": "Test details for JSON"}
+{
+    "timestamp": "2026-02-10 09:53:17",
+    "source_ip": "1.2.3.4",
+    "dest_ip": "10.0.0.1",
+    "dst_port": 80,
+    "action": "TEST_ACTION",
+    "details": "Test details for JSON"
+}
